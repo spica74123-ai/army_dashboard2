@@ -20,7 +20,7 @@ export async function POST(request) {
         let response = {};
 
         switch (action) {
-            case 'checkLogin':
+            case 'checkLogin': {
                 const user = await User.findOne({ username: data.username });
                 if (user && await user.comparePassword(data.password)) {
                     response = { success: true, name: user.name, role: user.role };
@@ -28,11 +28,13 @@ export async function POST(request) {
                     response = { error: "ชื่อผู้ใช้งาน หรือ รหัสผ่าน ไม่ถูกต้อง" };
                 }
                 break;
+            }
 
-            case 'getUsersData':
+            case 'getUsersData': {
                 const users = await User.find();
                 response = { rows: users.map(u => ({ username: u.username, password: u.password, name: u.name, role: u.role, rowIndex: u._id.toString() })) };
                 break;
+            }
 
             case 'saveUserData':
                 if (data.rowIndex && data.rowIndex !== -1) {
@@ -50,7 +52,7 @@ export async function POST(request) {
                 response = { success: true };
                 break;
 
-            case 'getUnitData':
+            case 'getUnitData': {
                 const units = await Unit.find();
                 const unitRows = units.map(u => [
                     u.plan || "", u.l0 || "", u.l1 || "", u.l2 || "", u.l3 || "", u.l4 || "",
@@ -61,8 +63,9 @@ export async function POST(request) {
                 const headers = ["แผนยุทธศาสตร์", "ส่วนภูมิภาค", "จัดกำลัง", "กองกำลัง", "หน่วยเฉพาะกิจ", "หน่วย", "นายพล", "น.", "ส.", "พลฯ", "รวม", "Check List", "อัปเดต", "นายพล(เดิม)", "น.(เดิม)", "ส.(เดิม)", "พลฯ(เดิม)", "รวม(เดิม)", "rowIndex"];
                 response = { headers, rows: unitRows, sheetName: "DB" };
                 break;
+            }
 
-            case 'saveUnitData':
+            case 'saveUnitData': {
                 const dt = new Date().toLocaleString("th-TH", { timeZone: "Asia/Bangkok" });
                 const statusNote = `Updated: ${dt}`;
                 const total = (Number(data.g) || 0) + (Number(data.n) || 0) + (Number(data.s) || 0) + (Number(data.p) || 0);
@@ -86,8 +89,9 @@ export async function POST(request) {
                 }
                 response = { success: true };
                 break;
+            }
 
-            case 'getPersonnelData':
+            case 'getPersonnelData': {
                 const personnels = await Personnel.find();
                 response = { rows: personnels.map(p => ({
                     rank: p.rank, name: p.name, position_normal: p.position_normal, 
@@ -96,8 +100,9 @@ export async function POST(request) {
                     timestamp: p.createdAt.toLocaleString("th-TH", { timeZone: "Asia/Bangkok" }), rowIndex: p._id.toString()
                 }))};
                 break;
+            }
 
-            case 'savePersonnelData':
+            case 'savePersonnelData': {
                 let fileUrl = data.id_card; 
                 if (data.id_card && data.id_card.length > 500) {
                     fileUrl = `data:application/octet-stream;base64,${data.id_card}`;
@@ -107,33 +112,36 @@ export async function POST(request) {
                 else await Personnel.create(pData);
                 response = { success: true };
                 break;
+            }
 
             case 'deletePersonnelData':
                 await Personnel.findByIdAndDelete(data.rowIndex);
                 response = { success: true };
                 break;
 
-            case 'getLogsData':
+            case 'getLogsData': {
                 const logs = await Log.find().sort({ createdAt: -1 }).limit(200);
                 response = { rows: logs.map(l => ({
                     timestamp: l.createdAt.toLocaleString("th-TH", { timeZone: "Asia/Bangkok" }),
                     name: l.name, role: l.role, action: l.action
                 }))};
                 break;
+            }
 
             case 'saveLog':
                 await Log.create(data);
                 response = { success: true };
                 break;
 
-            case 'getCasualtyData':
+            case 'getCasualtyData': {
                 const casualties = await Casualty.find();
                 response = { rows: casualties.map(c => ({
                     ...c.toObject(), rowIndex: c._id.toString()
                 }))};
                 break;
+            }
 
-            case 'saveCasualtyData':
+            case 'saveCasualtyData': {
                 let picUrl = data.picUrl || "";
                 if (data.picBase64 && data.picBase64.length > 100) {
                      picUrl = `data:image/jpeg;base64,${data.picBase64}`;
@@ -143,13 +151,14 @@ export async function POST(request) {
                 else await Casualty.create(cData);
                 response = { success: true };
                 break;
+            }
 
             case 'deleteCasualtyData':
                 await Casualty.findByIdAndDelete(data.rowIndex);
                 response = { success: true };
                 break;
 
-            case 'getArmyStructures':
+            case 'getArmyStructures': {
                 const ArmyStructureQuery = mongoose.models.ArmyStructure;
                 if (!ArmyStructureQuery) {
                     response = { rows: [], total: 0 };
@@ -159,8 +168,9 @@ export async function POST(request) {
                 const structures = await ArmyStructureQuery.find().limit(100);
                 response = { rows: structures, total: structures.length };
                 break;
+            }
 
-            case 'getArmyStats':
+            case 'getArmyStats': {
                 const ArmyStructureStats = mongoose.models.ArmyStructure;
                 if (!ArmyStructureStats) {
                     response = { stats: [] };
@@ -183,8 +193,9 @@ export async function POST(request) {
                 ]);
                 response = { stats: armyStats };
                 break;
+            }
 
-            case 'migrateSheets':
+            case 'migrateSheets': {
                 const armyStructureSchema = new mongoose.Schema({
                     plan: String,
                     level0: String,
@@ -282,6 +293,7 @@ export async function POST(request) {
                     }
                 };
                 break;
+            }
 
             default:
                 throw new Error(`ไม่รู้จักคำสั่ง API: ${action}`);
