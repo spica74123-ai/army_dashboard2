@@ -13,7 +13,8 @@ army_dashboard.iml
 analysis_options.yaml
 android
 ios
-lib
+# Folders moved/flattened or Flutter legacy
+# lib (removed to allow Next.js lib folder)
 linux
 macos
 test
