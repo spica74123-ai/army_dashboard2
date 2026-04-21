@@ -1,0 +1,62 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@100;200;300;400;500;600;700;800;900&family=Inter:wght@400;500;600;700;800&display=swap');
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    background: radial-gradient(circle at top left, rgba(234, 179, 8, 0.08), transparent 28%),
+                radial-gradient(circle at bottom right, rgba(56, 189, 248, 0.08), transparent 18%);
+  }
+  body {
+    min-height: 100vh;
+    background-color: #03070f;
+    color: #e2e8f0;
+    font-family: 'Noto Sans Thai', 'Inter', sans-serif;
+    font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  input,
+  textarea,
+  button,
+  select {
+    font-family: inherit;
+  }
+}
+
+@layer utilities {
+  .animate-slow-fade {
+    animation: slowFadeIn 0.65s ease-out both;
+  }
+  .animate-glow-pulse {
+    animation: glowPulse 3s ease-in-out infinite;
+  }
+  .animate-slide-in-up {
+    animation: slideInUp 0.55s ease-out both;
+  }
+  .animate-soft-float {
+    animation: softFloat 6s ease-in-out infinite;
+  }
+}
+
+@keyframes slowFadeIn {
+  0% { opacity: 0; transform: translateY(16px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes glowPulse {
+  0%, 100% { box-shadow: 0 0 0 rgba(234, 179, 8, 0); }
+  50% { box-shadow: 0 0 28px rgba(234, 179, 8, 0.18); }
+}
+
+@keyframes slideInUp {
+  0% { opacity: 0; transform: translateY(30px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes softFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
