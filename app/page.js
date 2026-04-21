@@ -134,6 +134,7 @@ export default function App() {
   const [activePage, setActivePage] = useState('dashboard');
   const [isPageAnimating, setIsPageAnimating] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoginLoading, setIsLoginLoading] = useState(false);
 
   // 2️⃣ Data States
   const [rawData, setRawData] = useState([]);
@@ -463,8 +464,16 @@ export default function App() {
               <label className="text-xs font-bold text-slate-400 tracking-wider uppercase ml-1"><i className="bi bi-key-fill me-2"></i>รหัสผ่าน</label>
               <input type="password" name="password" className="w-full bg-black/40 border border-white/10 rounded-2xl px-5 py-4 text-white text-center focus:outline-none focus:ring-2 focus:ring-yellow-500/50 transition-all placeholder:text-slate-600" placeholder="123" required />
             </div>
-            <button type="submit" className="w-full relative overflow-hidden bg-gradient-to-r from-yellow-500 to-yellow-600 text-black font-bold py-4 rounded-2xl shadow-[0_0_20px_rgba(234,179,8,0.3)] hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-center gap-3 mt-4">
-              <span className="relative z-10 flex items-center gap-2 text-lg"><i className="bi bi-box-arrow-in-right"></i> เข้าสู่ระบบ</span>
+            <button 
+              type="submit" 
+              disabled={isLoginLoading}
+              className={`w-full relative overflow-hidden bg-gradient-to-r from-yellow-500 to-yellow-600 text-black font-bold py-4 rounded-2xl shadow-[0_0_20px_rgba(234,179,8,0.3)] hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-center gap-3 mt-4 ${isLoginLoading ? 'opacity-70 cursor-not-allowed' : ''}`}
+            >
+              {isLoginLoading ? (
+                <span className="flex items-center gap-2"><i className="bi bi-hourglass-split animate-spin"></i> กำลังตรวจสอบ...</span>
+              ) : (
+                <span className="relative z-10 flex items-center gap-2 text-lg"><i className="bi bi-box-arrow-in-right"></i> เข้าสู่ระบบ</span>
+              )}
             </button>
             <div className="flex items-center gap-4 my-6">
               <div className="flex-1 h-px bg-gradient-to-r from-transparent to-white/20"></div>
