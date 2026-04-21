@@ -5,7 +5,7 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 // ==========================================
 // 🔗 API CONFIGURATION & MOCK DATA
 // ==========================================
-const GAS_API_URL = "http://localhost:3001/api/exec";
+const GAS_API_URL = "/api/exec";
 
 const taskForcesTemplate = [
   { id: 'naresuan', name: 'กกล. นเรศวร', stars: 3, color: '#0dcaf0', hq: 'ค่ายวชิรปราการ อ.เมือง จ.ตาก', hqLat: 16.865, hqLng: 99.125, detailedDesc: 'มีภารกิจหลักในการป้องกันประเทศ การจัดระเบียบพื้นที่ชายแดน สกัดกั้นยาเสพติด และการลักลอบเข้าเมืองโดยผิดกฎหมาย' },

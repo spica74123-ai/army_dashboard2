@@ -281,21 +281,38 @@ app.post('/api/exec', async (req, res) => {
 const PORT = process.env.PORT || 3001;
 const MONGODB_URI = process.env.MONGODB_URI || "mongodb://localhost:27017/rta_tactical_db";
 
-mongoose.connect(MONGODB_URI)
-    .then(() => {
+// เชื่อมต่อ MongoDB และจัดการ Admin เริ่มต้น
+const connectDB = async () => {
+    try {
+        await mongoose.connect(MONGODB_URI);
         console.log("✅ เชื่อมต่อ MongoDB สำเร็จ!");
         
-        // สร้าง Admin เริ่มต้นถ้ายังไม่มีในระบบ
-        User.findOne({ username: 'admin' }).then(async admin => {
-            if (!admin) {
-                // สร้าง User Admin (รหัสผ่านจะถูก hash โดย pre-save hook)
-                await User.create({ username: 'admin', password: '123', name: 'System Admin', role: 'Admin' });
-                console.log("👤 สร้าง User 'admin' รหัส '123' เริ่มต้นให้แล้ว (Hashed)");
-            }
-        });
+        const admin = await User.findOne({ username: 'admin' });
+        if (!admin) {
+            await User.create({ username: 'admin', password: '123', name: 'System Admin', role: 'Admin' });
+            console.log("👤 สร้าง User 'admin' รหัส '123' เริ่มต้นให้แล้ว (Hashed)");
+        }
+    } catch (err) {
+        console.error("❌ ไม่สามารถเชื่อมต่อ MongoDB ได้:", err);
+    }
+};
 
+// รันเฉพาะถ้าเป็นการรันตรงๆ (ไม่ได้ผ่าน Serverless Function ของ Vercel)
+if (process.env.NODE_ENV !== 'production' || !process.env.VERCEL) {
+    connectDB().then(() => {
         app.listen(PORT, () => {
             console.log(`🚀 Server เปิดทำงานที่พอร์ต http://localhost:${PORT}`);
         });
-    })
-    .catch(err => console.error("❌ ไม่สามารถเชื่อมต่อ MongoDB ได้:", err));
+    });
+} else {
+    // บน Vercel เราจะเชื่อมต่อ DB ทุกครั้งที่ Function ถูกเรียก (ออปชันนี้ง่ายแต่ไม่ประหยัด Connection)
+    // หรือเช็คสถานะการเชื่อมต่อก่อน
+    app.use(async (req, res, next) => {
+        if (mongoose.connection.readyState !== 1) {
+            await connectDB();
+        }
+        next();
+    });
+}
+
+module.exports = app;
