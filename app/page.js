@@ -63,13 +63,20 @@ function cleanNumber(val) {
 // ==========================================
 // 🎨 REUSABLE COMPONENTS
 // ==========================================
-const StatCard = ({ title, value, icon, colorClass }) => (
-  <div className={`relative overflow-hidden bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-6 transition-all duration-300 hover:-translate-y-1.5 hover:shadow-2xl hover:shadow-${colorClass.split('-')[1]}/20 group`}>
-    <div className={`absolute -right-6 -bottom-6 opacity-10 transition-transform duration-500 group-hover:scale-125 group-hover:rotate-12 ${colorClass}`}>
+const StatCard = ({ title, value, icon, colorClass, delay = 0 }) => (
+  <div 
+    className={`relative overflow-hidden bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-6 transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl hover:shadow-${colorClass.split('-')[1]}/20 group animate-fade-in-blur animate-shine`}
+  >
+    <div className={`absolute -right-6 -bottom-6 opacity-10 transition-transform duration-700 group-hover:scale-150 group-hover:rotate-12 ${colorClass}`}>
       {icon}
     </div>
-    <p className="text-slate-400 font-medium text-sm mb-2">{title}</p>
-    <h3 className={`text-4xl font-bold tracking-tight ${colorClass}`}>{Number(value).toLocaleString()}</h3>
+    <div className="relative z-10">
+      <p className="text-slate-400 font-medium text-sm mb-2 group-hover:text-slate-300 transition-colors uppercase tracking-wider">{title}</p>
+      <h3 className={`text-4xl font-bold tracking-tight ${colorClass} group-hover:scale-105 transition-transform origin-left duration-500`}>
+        {Number(value).toLocaleString()}
+      </h3>
+    </div>
+    <div className={`absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-${colorClass.split("-")?.[1] || "slate"}-500/30 to-transparent scale-x-0 group-hover:scale-x-100 transition-transform duration-700`}></div>
   </div>
 );
 
@@ -78,14 +85,15 @@ const NavItem = ({ id, label, iconClass, colorClass = "text-slate-400", delayIdx
   return (
     <button 
       onClick={() => switchPage(id)}
-      className={`w-full flex items-center gap-4 px-4 py-3.5 rounded-2xl transition-all duration-300 relative overflow-hidden group animate-menu-slide-in
-        ${isActive ? 'bg-gradient-to-r from-yellow-500/10 to-transparent text-yellow-400' : 'hover:bg-white/5 text-slate-400 hover:text-slate-200'}`}
-      style={{ animationDelay: `${delayIdx * 50}ms`, animationFillMode: 'forwards', opacity: 0 }}
+      className={`w-full flex items-center gap-4 px-4 py-3.5 rounded-2xl transition-all duration-500 relative overflow-hidden group animate-menu-slide-in
+        ${isActive ? 'bg-white/5 text-yellow-400 shadow-lg' : 'hover:bg-white/5 text-slate-400 hover:text-slate-200'}`}
+      style={{ animationDelay: `${delayIdx * 40}ms`, animationFillMode: 'forwards', opacity: 0 }}
     >
-      <div className={`absolute left-0 top-1/2 -translate-y-1/2 w-1.5 bg-yellow-500 rounded-r-full shadow-[0_0_10px_rgba(234,179,8,0.6)] transition-all duration-300 ease-out ${isActive ? 'h-8 opacity-100' : 'h-0 opacity-0'}`}></div>
-      <div className="absolute inset-0 bg-gradient-to-r from-white/5 to-transparent translate-x-[-100%] group-hover:translate-x-0 transition-transform duration-500 ease-out"></div>
-      <i className={`${iconClass} text-xl transition-all duration-300 relative z-10 ${isActive ? `scale-110 drop-shadow-[0_0_8px_currentColor] ${colorClass}` : `group-hover:scale-110 group-hover:rotate-[5deg] ${colorClass}`}`}></i>
-      {(!sidebarCollapsed || mobileOpen) && <span className="font-semibold tracking-wide whitespace-nowrap relative z-10 transition-transform duration-300 group-hover:translate-x-1">{label}</span>}
+      <div className={`absolute left-0 top-1/2 -translate-y-1/2 w-1.5 bg-yellow-500 rounded-r-full shadow-[0_0_15px_rgba(234,179,8,0.8)] transition-all duration-500 ease-out ${isActive ? 'h-8 opacity-100' : 'h-0 opacity-0'}`}></div>
+      <div className="absolute inset-0 bg-gradient-to-r from-white/5 via-transparent to-transparent translate-x-[-100%] group-hover:translate-x-0 transition-transform duration-700 ease-out"></div>
+      <i className={`${iconClass} text-xl transition-all duration-500 relative z-10 ${isActive ? `scale-125 drop-shadow-[0_0_10px_rgba(234,179,8,0.5)] ${colorClass}` : `group-hover:scale-125 group-hover:rotate-[10deg] ${colorClass}`}`}></i>
+      {(!sidebarCollapsed || mobileOpen) && <span className={`font-bold tracking-wide whitespace-nowrap relative z-10 transition-all duration-500 ${isActive ? 'translate-x-1' : 'group-hover:translate-x-1'}`}>{label}</span>}
+      {isActive && <div className="absolute right-4 w-1.5 h-1.5 bg-yellow-500 rounded-full pulse-yellow"></div>}
     </button>
   );
 };
@@ -650,17 +658,17 @@ export default function App() {
         )}
 
         {/* Content Area */}
-        <div className={`flex-1 overflow-y-auto custom-scroll p-6 lg:p-10 relative z-10 transition-opacity duration-300 ${isPageAnimating ? 'opacity-0' : 'opacity-100'}`}>
+        <div className={`flex-1 overflow-y-auto custom-scroll p-6 lg:p-10 relative z-10 transition-all duration-500 ${isPageAnimating ? 'opacity-0 scale-95 blur-sm' : 'opacity-100 scale-100 blur-0'}`}>
           
           {/* ================= 1. DASHBOARD ================= */}
           {activePage === 'dashboard' && (
             <div className="space-y-8 animate-in fade-in">
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 lg:gap-6">
-                <StatCard title="กำลังพลรวม (นาย)" value={dashboardStats.total} icon={<i className="bi bi-people-fill text-6xl"></i>} colorClass="text-white border-t-slate-500" />
-                <StatCard title="นายพล" value={dashboardStats.g} icon={<i className="bi bi-star-fill text-6xl"></i>} colorClass="text-[#38bdf8] border-t-[#38bdf8]" />
-                <StatCard title="สัญญาบัตร (น.)" value={dashboardStats.n} icon={<i className="bi bi-person-badge-fill text-6xl"></i>} colorClass="text-[#4ade80] border-t-[#4ade80]" />
-                <StatCard title="ประทวน (ส.)" value={dashboardStats.s} icon={<i className="bi bi-person-check-fill text-6xl"></i>} colorClass="text-[#facc15] border-t-[#facc15]" />
-                <StatCard title="พลทหาร (พลฯ)" value={dashboardStats.p} icon={<i className="bi bi-person-fill text-6xl"></i>} colorClass="text-[#f87171] border-t-[#f87171]" />
+                <StatCard title="กำลังพลรวม (นาย)" value={dashboardStats.total} icon={<i className="bi bi-people-fill text-6xl"></i>} colorClass="text-white border-t-slate-500" delay={0} />
+                <StatCard title="นายพล" value={dashboardStats.g} icon={<i className="bi bi-star-fill text-6xl"></i>} colorClass="text-[#38bdf8] border-t-[#38bdf8]" delay={100} />
+                <StatCard title="สัญญาบัตร (น.)" value={dashboardStats.n} icon={<i className="bi bi-person-badge-fill text-6xl"></i>} colorClass="text-[#4ade80] border-t-[#4ade80]" delay={200} />
+                <StatCard title="ประทวน (ส.)" value={dashboardStats.s} icon={<i className="bi bi-person-check-fill text-6xl"></i>} colorClass="text-[#facc15] border-t-[#facc15]" delay={300} />
+                <StatCard title="พลทหาร (พลฯ)" value={dashboardStats.p} icon={<i className="bi bi-person-fill text-6xl"></i>} colorClass="text-[#f87171] border-t-[#f87171]" delay={400} />
               </div>
               
               <div>
@@ -752,7 +760,10 @@ export default function App() {
                    </thead>
                    <tbody className="text-sm divide-y divide-white/5">
                      {filteredData.map((u, idx) => (
-                       <tr key={idx} className="hover:bg-white/5 transition-colors">
+                        <tr 
+                          key={idx} 
+                          className="hover:bg-white/5 transition-all duration-300 animate-fade-in-blur cursor-default"
+                          style={{ animationDelay: `${Math.min(idx * 30, 600)}ms` }}>
                          <td className="p-4">
                            <div className="font-medium text-slate-300 mb-1"><i className="bi bi-journal-text text-slate-500 mr-2"></i>{u[0]}</div>
                            <div className="font-bold text-white"><i className="bi bi-shield-check text-blue-400 mr-2"></i>{u[1]}</div>
