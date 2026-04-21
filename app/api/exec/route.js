@@ -149,6 +149,140 @@ export async function POST(request) {
                 response = { success: true };
                 break;
 
+            case 'getArmyStructures':
+                const ArmyStructureQuery = mongoose.models.ArmyStructure;
+                if (!ArmyStructureQuery) {
+                    response = { rows: [], total: 0 };
+                    break;
+                }
+
+                const structures = await ArmyStructureQuery.find().limit(100);
+                response = { rows: structures, total: structures.length };
+                break;
+
+            case 'getArmyStats':
+                const ArmyStructureStats = mongoose.models.ArmyStructure;
+                if (!ArmyStructureStats) {
+                    response = { stats: [] };
+                    break;
+                }
+
+                const armyStats = await ArmyStructureStats.aggregate([
+                    {
+                        $group: {
+                            _id: '$plan',
+                            count: { $sum: 1 },
+                            totalPersonnel: { $sum: '$total' },
+                            generals: { $sum: '$general' },
+                            colonels: { $sum: '$colonel' },
+                            majors: { $sum: '$major' },
+                            soldiers: { $sum: '$soldier' }
+                        }
+                    },
+                    { $sort: { totalPersonnel: -1 } }
+                ]);
+                response = { stats: armyStats };
+                break;
+
+            case 'migrateSheets':
+                const armyStructureSchema = new mongoose.Schema({
+                    plan: String,
+                    level0: String,
+                    level1: String,
+                    level2: String,
+                    level3: String,
+                    level4: String,
+                    name: String,
+                    general: { type: Number, default: 0 },
+                    colonel: { type: Number, default: 0 },
+                    major: { type: Number, default: 0 },
+                    soldier: { type: Number, default: 0 },
+                    total: { type: Number, default: 0 },
+                    checkList: Boolean,
+                    note: String,
+                    createdAt: { type: Date, default: Date.now },
+                    updatedAt: { type: Date, default: Date.now }
+                });
+
+                const ArmyStructure = mongoose.models.ArmyStructure || 
+                    mongoose.model('ArmyStructure', armyStructureSchema);
+
+                // Fetch CSV from Google Sheets
+                const SHEET_ID = '1Jbr9BJOO6-gsrK82JQNd-RCNetFmegSq4EjuO0TR3cM';
+                const SHEET_GID = '46911911';
+                const CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${SHEET_GID}`;
+
+                const csvResponse = await fetch(CSV_URL);
+                const csvText = await csvResponse.text();
+
+                // Parse CSV
+                const lines = csvText.trim().split('\n');
+                const headers = parseCSVLine(lines[0]);
+
+                const documents = [];
+                for (let i = 1; i < lines.length; i++) {
+                    const line = lines[i].trim();
+                    if (!line) continue;
+
+                    const values = parseCSVLine(line);
+                    const row = {};
+                    headers.forEach((header, idx) => {
+                        row[header] = values[idx] || '';
+                    });
+
+                    if (!row['ปฏิบัติการหน้างาน (Level 4)'] && !row['นายพล']) continue;
+
+                    const doc = {
+                        plan: row['การจัดแผน'] || '',
+                        level0: row['ระดับยุทธศาสตร์ (Level 0)'] || '',
+                        level1: row['การจัดกำลัง (Level 1)'] || '',
+                        level2: row['ระดับยุทธการ (Level 2)'] || '',
+                        level3: row['ระดับยุทธวิธี (Level 3)'] || '',
+                        level4: row['ปฏิบัติการหน้างาน (Level 4)'] || '',
+                        name: row['ปฏิบัติการหน้างาน (Level 4)'] || '',
+                        general: parseInt(row['นายพล']) || 0,
+                        colonel: parseInt(row['น.']) || 0,
+                        major: parseInt(row['ส.']) || 0,
+                        soldier: parseInt(row['พลฯ']) || 0,
+                        total: parseInt(row['รวม']) || 0,
+                        checkList: (row['เช็ค List'] || '').toUpperCase() === 'TRUE',
+                        note: row['หมายเหตุ'] || ''
+                    };
+                    documents.push(doc);
+                }
+
+                await ArmyStructure.deleteMany({});
+                const importResult = await ArmyStructure.insertMany(documents);
+
+                const sheetsStats = await ArmyStructure.aggregate([
+                    {
+                        $group: {
+                            _id: '$plan',
+                            count: { $sum: 1 },
+                            totalPersonnel: { $sum: '$total' }
+                        }
+                    },
+                    { $sort: { totalPersonnel: -1 } }
+                ]);
+
+                const totalRecords = await ArmyStructure.countDocuments({});
+                const totalPersonnelResult = await ArmyStructure.aggregate([
+                    { $group: { _id: null, total: { $sum: '$total' } } }
+                ]);
+                const totalPersonnel = totalPersonnelResult[0]?.total || 0;
+
+                response = {
+                    success: true,
+                    message: `Successfully imported ${importResult.length} records`,
+                    stats: {
+                        importedRecords: importResult.length,
+                        totalRecords,
+                        totalPersonnel,
+                        byPlan: sheetsStats
+                    }
+                };
+                break;
+
             default:
                 throw new Error(`ไม่รู้จักคำสั่ง API: ${action}`);
         }
@@ -159,4 +293,33 @@ export async function POST(request) {
         console.error('API Route Error:', error);
         return NextResponse.json({ error: error.message || "Internal Server Error" }, { status: 500 });
     }
+}
+
+// Helper function to parse CSV line with quote handling
+function parseCSVLine(line) {
+    const result = [];
+    let current = '';
+    let insideQuotes = false;
+
+    for (let i = 0; i < line.length; i++) {
+        const char = line[i];
+        const nextChar = line[i + 1];
+
+        if (char === '"') {
+            if (insideQuotes && nextChar === '"') {
+                current += '"';
+                i++;
+            } else {
+                insideQuotes = !insideQuotes;
+            }
+        } else if (char === ',' && !insideQuotes) {
+            result.push(current.trim());
+            current = '';
+        } else {
+            current += char;
+        }
+    }
+
+    result.push(current.trim());
+    return result;
 }
