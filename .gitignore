@@ -7,12 +7,11 @@ dist
 build
 .gemini
 coverage
-.flutter-plugins-dependencies
-.metadata
-army_dashboard.iml
-analysis_options.yaml
-android
-ios
+prisma/*.db
+prisma/*.db-journal
+inspect_excel*.js
+import_excel.js
+*.xlsx
 # Folders moved/flattened or Flutter legacy
 # lib (removed to allow Next.js lib folder)
 linux

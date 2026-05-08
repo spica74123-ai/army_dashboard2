@@ -1,0 +1,102 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model Unit {
+  id         Int      @id @default(autoincrement())
+  plan       String?
+  l0         String?
+  l1         String?
+  l2         String?
+  l3         String?
+  l4         String?
+  g          Int      @default(0)
+  n          Int      @default(0)
+  s          Int      @default(0)
+  p          Int      @default(0)
+  total      Int      @default(0)
+  lat        Float    @default(0)
+  lng        Float    @default(0)
+  checkList  String?
+  statusNote String?
+  prevG      Int      @default(0)
+  prevN      Int      @default(0)
+  prevS      Int      @default(0)
+  prevP      Int      @default(0)
+  prevTotal  Int      @default(0)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model User {
+  id       Int     @id @default(autoincrement())
+  username String  @unique
+  password String
+  name     String?
+  role     String  @default("Viewer")
+}
+
+model Personnel {
+  id              Int      @id @default(autoincrement())
+  rank            String?
+  name            String?
+  position_normal String?
+  position_field  String?
+  id_card         String?
+  mil_id          String?
+  unit            String?
+  affiliation     String?
+  line_id         String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model Log {
+  id        Int      @id @default(autoincrement())
+  name      String?
+  role      String?
+  action    String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Casualty {
+  id            Int      @id @default(autoincrement())
+  date          String?
+  name          String?
+  unit          String?
+  cause         String?
+  status        String?
+  picUrl        String?
+  doctorConfirm String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model ArmyStructure {
+  id        Int      @id @default(autoincrement())
+  plan      String?
+  level0    String?
+  level1    String?
+  level2    String?
+  level3    String?
+  level4    String?
+  name      String?
+  general   Int      @default(0)
+  colonel   Int      @default(0)
+  major     Int      @default(0)
+  soldier   Int      @default(0)
+  total     Int      @default(0)
+  checkList Boolean  @default(false)
+  note      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

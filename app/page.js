@@ -505,7 +505,7 @@ export default function App() {
   // 2️⃣ RENDER: MAIN APP LAYOUT
   // ==========================================
   return (
-    <div className="flex h-screen bg-[#070a13] text-slate-200 font-['Sarabun'] overflow-hidden selection:bg-yellow-500/30 animate-slow-fade">
+    <div data-theme={theme} className="flex h-screen bg-[#070a13] text-slate-200 font-['Sarabun'] overflow-hidden selection:bg-yellow-500/30 animate-slow-fade">
       <style dangerouslySetInnerHTML={{ __html: `
         ::-webkit-scrollbar { width: 8px; height: 8px; }
         ::-webkit-scrollbar-track { background: rgba(0, 0, 0, 0.2); border-radius: 4px; }
